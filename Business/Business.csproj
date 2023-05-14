@@ -72,7 +72,7 @@
   <ItemGroup>
     <Compile Include="Contracts\IInventoryService.cs" />
     <Compile Include="Contracts\IProductService.cs" />
-    <Compile Include="Contracts\IUserRepository.cs" />
+    <Compile Include="Contracts\IUserService.cs" />
     <Compile Include="Implementation\InventoryService.cs" />
     <Compile Include="Implementation\ProductService.cs" />
     <Compile Include="Implementation\UserService.cs" />

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,7 +37,6 @@ namespace Data.Implementation
                 return true;
             }
         }
-
         public Domain.Model.Inventory Get(int id)
         {
             using (var ctx = new InventoryStevDBContext())
@@ -46,19 +46,20 @@ namespace Data.Implementation
                 return l;
             }
         }
-
         public ICollection<Product> GetProduct(int idProduct)
         {
-            if (idProduct <= 0) return null;
             using (var ctx = new InventoryStevDBContext())
             {
-                var userInventory = ctx.Checks.Where(up => up.User.Id == idProduct)
-                                    .Include(up => up.account).Select(up => up.account).ToList();
+                var products = (from c in ctx.Checks
+                                join a in ctx.Accounts on c.Account.Id equals a.Id
+                                join i in ctx.Inventories on a.Inventory.Id equals i.Id
+                                join p in ctx.Products on c.Product.Id equals p.Id
+                                where c.User.Id == idProduct
+                                select p).ToList();
 
-                return (ICollection<Product>)userInventory;
+                return products;
             }
         }
-
         bool IInventoryRepository.RelateInventory(int idUser, int idInventory)
         {
             if (idUser <= 0) return false;
@@ -75,7 +76,7 @@ namespace Data.Implementation
                 if (existingRelation != null) return true; // checamos si ya existe la relacion y la validamos
 
                 //Creamos el nuevo objeto
-                var userInventory = new Check { User = user, account = inventory };
+                var userInventory = new Check { User = user, Account = inventory };
                 ctx.Checks.Add(userInventory);
                 ctx.SaveChanges();
             }
@@ -85,17 +86,70 @@ namespace Data.Implementation
         {
             using (var ctx = new InventoryStevDBContext())
             {
-                Domain.Model.Inventory l = ctx.Inventories.SingleOrDefault(x => x.Id == entity.Id);
-                l.product = entity.product;
+                var l = ctx.Inventories.FirstOrDefault(x => x.Id == entity.Id);
+                if (l == null) return false;
+
+                l.Categoria = entity.Categoria;
+                l.Description = entity.Description;
+                l.CreatedDate = entity.CreatedDate;
+                l.ModifiedDate = DateTime.Now;
+                l.Account = entity.Account;
+                l.UpdatedProduct = entity.UpdatedProduct; // aquí se cambia product por UpdatedProduct
+                l.Products = entity.Products;
 
                 ctx.SaveChanges();
                 return true;
             }
         }
-
         public bool RelateInventory(Product newProduct)
         {
-            throw new NotImplementedException();
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var inventories = ctx.Inventories.Include(i => i.Products).ToList();
+                foreach (var inventory in inventories)
+                {
+                    var existingProduct = inventory.Products.FirstOrDefault(p => p.Id == newProduct.Id);
+                    if (existingProduct != null)
+                    {
+                        return false; // the product is already related to an inventory
+                    }
+                    inventory.Products.Add(newProduct);
+                }
+                ctx.SaveChanges();
+                return true;
+            }
+        }
+        public Domain.Model.Inventory GetById(int id, params Expression<Func<Domain.Model.Inventory, object>>[] includeProperties)
+        {
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var query = ctx.Inventories.Where(i => i.Id == id);
+                foreach (var includeProperty in includeProperties)
+                {
+                    query = query.Include(includeProperty);
+                }
+                return query.FirstOrDefault();
+            }
+        }
+        public IEnumerable<Domain.Model.Inventory> GetAll(Expression<Func<Domain.Model.Inventory, bool>> filter = null, Func<IQueryable<Domain.Model.Inventory>, IOrderedQueryable<Domain.Model.Inventory>> orderBy = null, string includeProperties = "")
+        {
+            using (var ctx = new InventoryStevDBContext())
+            {
+                IQueryable<Domain.Model.Inventory> query = ctx.Inventories;
+                if (filter != null)
+                {
+                    query = query.Where(filter);
+                }
+                foreach (var includeProperty in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty);
+                }
+                if (orderBy != null)
+                {
+                    return orderBy(query).ToList();
+                }
+                return query.ToList();
+            }
         }
     }
 }

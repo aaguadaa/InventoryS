@@ -1,14 +1,13 @@
-﻿using Data.Contracts;
-using Domain.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Domain.Model;
 
 namespace Data.Contracts
 {
     public interface ICheckRepository : IGenericRepository<Check>
     {
+        Task<IEnumerable<Check>> GetAllByDateAsync(DateTime date);
+        Task<IEnumerable<Check>> GetAllByUserIdAsync(int userId);
     }
 }

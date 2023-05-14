@@ -1,36 +1,52 @@
-﻿using System;
+﻿using Data.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-using Data.Contracts;
 
 namespace Data.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly DbContext _context;
+        private readonly DbContext _dbContext;
         private readonly DbSet<T> _dbSet;
 
-        public GenericRepository(DbContext context)
+        public GenericRepository(DbContext dbContext)
         {
-            _context = context;
-            _dbSet = _context.Set<T>();
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _dbSet = _dbContext.Set<T>();
         }
 
-        public void Add(T entity)
+        public int Add(T entity)
         {
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+
             _dbSet.Add(entity);
-            _context.SaveChanges();
+            _dbContext.SaveChanges();
+
+            // Return the ID of the added entity
+            var idProperty = typeof(T).GetProperty("Id");
+            if (idProperty != null)
+            {
+                return (int)idProperty.GetValue(entity);
+            }
+            return 0;
         }
 
-        public bool Delete(int id)
+        public T GetById(int id, params Expression<Func<T, object>>[] includeProperties)
         {
-            var entity = _dbSet.Find(id);
-            if (entity == null) return false;
-            _dbSet.Remove(entity);
-            _context.SaveChanges();
-            return true;
+            IQueryable<T> query = _dbSet;
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query.FirstOrDefault(x => (int)x.GetType().GetProperty("Id").GetValue(x) == id);
         }
 
         public T Get(int id)
@@ -40,14 +56,30 @@ namespace Data.Repositories
 
         public bool Update(T entity)
         {
-            _context.Entry(entity).State = EntityState.Modified;
-            _context.SaveChanges();
-            return true;
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+
+            _dbContext.Entry(entity).State = EntityState.Modified;
+            return _dbContext.SaveChanges() > 0;
+        }
+
+        public bool Delete(int id)
+        {
+            var entityToDelete = _dbSet.Find(id);
+            if (entityToDelete == null)
+            {
+                return false;
+            }
+
+            _dbSet.Remove(entityToDelete);
+            return _dbContext.SaveChanges() > 0;
         }
 
         public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null,
-                             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-                             string includeProperties = "")
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = "")
         {
             IQueryable<T> query = _dbSet;
 
@@ -63,16 +95,10 @@ namespace Data.Repositories
 
             if (orderBy != null)
             {
-                return orderBy(query).ToList();
+                query = orderBy(query);
             }
-            else
-            {
-                return query.ToList();
-            }
-        }
-        int IGenericRepository<T>.Add(T entity)
-        {
-            throw new NotImplementedException();
+
+            return query.ToList();
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Data.Contracts;
 using Domain;
 using Domain.Model;
+using System.Linq.Expressions;
 
 namespace Data.Implementation
 {
@@ -16,8 +17,6 @@ namespace Data.Implementation
         public int Add(User entity)
         {
             if (entity == null) return 0;
-           // entity.CreatedDate = DateTime.Now;
-          //  entity.ModifiedDate = null;
             using (var ctx = new InventoryStevDBContext())
             {
                 ctx.Users.Add(entity);
@@ -26,7 +25,6 @@ namespace Data.Implementation
             }
 
         }
-
         public bool Delete(int id)
         {
             if (id <= 0) return false;
@@ -39,7 +37,6 @@ namespace Data.Implementation
                 return true;
             }
         }
-
         public User Get(int id)
         {
             if (id <= 0) return null;
@@ -49,41 +46,39 @@ namespace Data.Implementation
                 return currentUser;
             }
         }
-        ICollection<Account> IUserRepository.GetAccount(int idUser)
+        public ICollection<Account> GetAccounts(int idUser)
         {
             if (idUser <= 0) return null;
             using (var ctx = new InventoryStevDBContext())
             {
-                var userInventory = ctx.Checks.Where(up => up.User.Id == idUser)
-                                    .Include(up => up.account).Select(up => up.account).ToList();
+                var userAccounts = ctx.Checks.Where(up => up.User.Id == idUser)
+                                    .Include(up => up.Account).Select(up => up.Account).ToList();
 
-                return (ICollection<Account>)userInventory;
+                return userAccounts;
             }
         }
-
-        bool IUserRepository.RelateInventory(int idUser, int idInventory)
+        public bool RelateAccount(int idUser, int idAccount)
         {
             if (idUser <= 0) return false;
-            if (idInventory <= 0) return false;
+            if (idAccount <= 0) return false;
             using (var ctx = new InventoryStevDBContext())
             {
-                //Obtenemos elusuario y el proyecto a relacionar
+                //Obtenemos el usuario y la cuenta a relacionar
                 var user = ctx.Users.SingleOrDefault(x => x.Id == idUser);
-                var inventory = ctx.Accounts.SingleOrDefault(x => x.Id == idInventory);
+                var account = ctx.Accounts.SingleOrDefault(x => x.Id == idAccount);
                 //validamos si existe
-                if (user == null || inventory == null) return false;
+                if (user == null || account == null) return false;
 
-                var existingRelation = ctx.Checks.SingleOrDefault(up => up.User.Id == idUser && up.account.Id == idInventory);
+                var existingRelation = ctx.Checks.SingleOrDefault(up => up.User.Id == idUser && up.Account.Id == idAccount);
                 if (existingRelation != null) return true; // checamos si ya existe la relacion y la validamos
 
                 //Creamos el nuevo objeto
-                var userInventory = new Check { User = user, account = inventory };
-                ctx.Checks.Add(userInventory);
+                var userAccount = new Check { User = user, Account = account };
+                ctx.Checks.Add(userAccount);
                 ctx.SaveChanges();
             }
             return true;
         }
-
         public bool Update(User entity)
         {
             if (entity == null) return false;
@@ -99,16 +94,90 @@ namespace Data.Implementation
                 return true;
             }
         }
-
-        User IUserRepository.Login(string username, string password)
+        public User Login(string username, string password)
         {
             if (username == null || password == null) return null;
             using (var ctx = new InventoryStevDBContext())
             {
-                User currentUser = ctx.Users.Where(u => u.Name == username && u.Password == password).FirstOrDefault();
+                User currentUser = ctx.Users.Where(u => u.UserName == username && u.Password == password).FirstOrDefault();
                 return currentUser;
             }
 
+        }
+        public ICollection<Account> GetAccount(int idUser)
+        {
+            if (idUser <= 0) return null;
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var userInventory = ctx.Checks.Where(up => up.User.Id == idUser)
+                                    .Include(up => up.Account).Select(up => up.Account).ToList();
+
+                return userInventory;
+            }
+        }
+        public bool RelateInventory(int idUser, int idInventory)
+        {
+            if (idUser <= 0) return false;
+            if (idInventory <= 0) return false;
+            using (var ctx = new InventoryStevDBContext())
+            {
+                //Obtenemos elusuario y el proyecto a relacionar
+                var user = ctx.Users.SingleOrDefault(x => x.Id == idUser);
+                var inventory = ctx.Accounts.SingleOrDefault(x => x.Id == idInventory);
+                //validamos si existe
+                if (user == null || inventory == null) return false;
+
+                var existingRelation = ctx.Checks.SingleOrDefault(up => up.User.Id == idUser && up.Account.Id == idInventory);
+                if (existingRelation != null) return true; // checamos si ya existe la relacion y la validamos
+
+                //Creamos el nuevo objeto
+                var userInventory = new Check { User = user, Account = inventory };
+                ctx.Checks.Add(userInventory);
+                ctx.SaveChanges();
+            }
+            return true;
+        }
+        public IEnumerable<User> GetAll()
+        {
+            using (var ctx = new InventoryStevDBContext())
+            {
+                return ctx.Users.ToList();
+            }
+        }
+        public User GetById(int id, params Expression<Func<User, object>>[] includeProperties)
+        {
+            using (var ctx = new InventoryStevDBContext())
+            {
+                IQueryable<User> query = ctx.Users;
+                foreach (Expression<Func<User, object>> includeProperty in includeProperties)
+                {
+                    query = query.Include(includeProperty);
+                }
+                return query.FirstOrDefault(x => x.Id == id);
+            }
+        }
+        public IEnumerable<User> GetAll(Expression<Func<User, bool>> filter = null, Func<IQueryable<User>, IOrderedQueryable<User>> orderBy = null, string includeProperties = "")
+        {
+            using (var ctx = new InventoryStevDBContext())
+            {
+                IQueryable<User> query = ctx.Users;
+                if (filter != null)
+                {
+                    query = query.Where(filter);
+                }
+                foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty);
+                }
+                if (orderBy != null)
+                {
+                    return orderBy(query).ToList();
+                }
+                else
+                {
+                    return query.ToList();
+                }
+            }
         }
     }
 }

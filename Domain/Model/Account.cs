@@ -7,7 +7,12 @@ namespace Domain.Model
     {
         [Key]
         public int Id { get; set; }
-        public User User { get; set; }
-        public List<Check> Checks { get; set; }
+        [Required]
+        [MaxLength(50)]
+        public string Name { get; set; }
+        [MaxLength(255)]
+        public string Description { get; set; }
+        public ICollection<User> Users { get; set; }
+        public ICollection<Check> Checks { get; set; }
     }
 }

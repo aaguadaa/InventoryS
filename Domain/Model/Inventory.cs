@@ -10,7 +10,7 @@ namespace Domain.Model
         public int Id { get; set; }
         public string Categoria { get; set; }
         public string Description { get; set; }
-        public Account account { get; set; }
+        public Account Account { get; set; }
         public Product UpdatedProduct { get; set; }
         public List<Product> Products { get; set; }
         public DateTime CreatedDate { get; set; }
