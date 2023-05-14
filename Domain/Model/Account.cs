@@ -7,7 +7,7 @@ namespace Domain.Model
     {
         [Key]
         public int Id { get; set; }
-        public List<Inventory> inventory { get; set; }
-        public List<Check> check { get; set; }
+        public User User { get; set; }
+        public List<Check> Checks { get; set; }
     }
 }

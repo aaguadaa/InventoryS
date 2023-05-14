@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Model
 {
@@ -15,8 +11,8 @@ namespace Domain.Model
         public string Categoria { get; set; }
         public string Description { get; set; }
         public Account account { get; set; }
-        public Product productUpdt { get; set; }
-        public List<Product> product { get; set; }
+        public Product UpdatedProduct { get; set; }
+        public List<Product> Products { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
     }

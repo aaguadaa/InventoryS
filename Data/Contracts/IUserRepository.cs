@@ -13,6 +13,6 @@ namespace Data.Contracts
         ICollection<Account> GetAccount(int idUser);
         User Login(string username, string password);
         bool RelateInventory(int idUser, int idInventory);
-
+        IEnumerable<User> GetAll();
     }
 }

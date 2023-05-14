@@ -78,6 +78,7 @@
     <Compile Include="Contracts\IUserRepository.cs" />
     <Compile Include="Implementation\AccountRepository.cs" />
     <Compile Include="Implementation\CheckRepository.cs" />
+    <Compile Include="Implementation\GenericRepository.cs" />
     <Compile Include="Implementation\InventoryRepository.cs" />
     <Compile Include="Implementation\ProductRepository.cs" />
     <Compile Include="Implementation\UserRepository.cs" />

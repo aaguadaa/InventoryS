@@ -13,11 +13,12 @@ namespace Domain.Model
     {
         [Key]
         public int Id { get; set; }
-        public Inventory inventory { get; set; }
-        public Product productUpdt { get; set; }
+        public Inventory Inventory { get; set; }
+        public Product Product { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public User User { get; set; }
-        public Account account { get; set; }
+        public Account Account { get; set; }
+        public string Note { get; set; }
     }
 }
