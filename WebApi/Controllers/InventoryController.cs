@@ -11,7 +11,7 @@ using System.Web.Http;
 namespace WebAPI.Controllers
 {
 
-    [RoutePrefix("project")]
+    [RoutePrefix("inventory")]
     public class InventoryController : ApiController
     {
         private readonly IInventoryService _inventoryService;
