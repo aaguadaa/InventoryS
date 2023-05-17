@@ -70,9 +70,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\IAccountService.cs" />
+    <Compile Include="Contracts\ICheckService.cs" />
     <Compile Include="Contracts\IInventoryService.cs" />
     <Compile Include="Contracts\IProductService.cs" />
     <Compile Include="Contracts\IUserService.cs" />
+    <Compile Include="Implementation\AccountService.cs" />
+    <Compile Include="Implementation\CheckService.cs" />
     <Compile Include="Implementation\InventoryService.cs" />
     <Compile Include="Implementation\ProductService.cs" />
     <Compile Include="Implementation\UserService.cs" />

@@ -10,6 +10,8 @@ using Business.Contracts;
 using Business.Implementation;
 using Data.Contracts;
 using Data.Implementation;
+using Business.Services;
+using Data.Repositories;
 
 namespace WebAPI
 {
@@ -17,10 +19,25 @@ namespace WebAPI
     {
         public static void Register(HttpConfiguration config)
         {
-            //SimpleInjectorInitializer.Initialize();
-            // Web API configuration and services
+            // SimpleInjector configuration
+            var container = new SimpleInjector.Container();
+            container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
 
-            // Web API routes
+            // Register services and repositories
+            container.Register<IUserService, UserService>(Lifestyle.Scoped);
+            container.Register<IUserRepository, UserRepository>(Lifestyle.Scoped);
+            container.Register<IInventoryService, InventoryService>(Lifestyle.Scoped);
+            container.Register<IInventoryRepository, InventoryRepository>(Lifestyle.Scoped);
+            container.Register<IProductService, ProductService>(Lifestyle.Scoped);
+            container.Register<IProductRepository, ProductRepository>(Lifestyle.Scoped);
+
+            // Verify the container's configuration
+            container.Verify();
+
+            // Set the dependency resolver for Web API to use SimpleInjector
+            config.DependencyResolver = new SimpleInjectorWebApiDependencyResolver(container);
+
+            // Web API configuration and routes
             config.MapHttpAttributeRoutes();
 
             config.Routes.MapHttpRoute(
@@ -28,28 +45,6 @@ namespace WebAPI
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
-
-
-            var container = new SimpleInjector.Container();
-            container.RegisterWebApiControllers(GlobalConfiguration.Configuration);
-            //User
-            container.Register<IUserService, UserService>();
-            container.Register<IUserRepository, UserRepository>();
-            //Inventory
-            container.Register<IInventoryService, InventoryService>();
-            container.Register<IInventoryRepository, InventoryRepository>();
-
-            //Product
-            container.Register<IProductService, ProductService>();
-            container.Register<IProductRepository, ProductRepository>();
-
-
-            container.Verify();
-            //config.DependencyResolver = new SimpleInjectorWebApiDependecyResolver(container);
-            GlobalConfiguration.Configuration.DependencyResolver =
-        new SimpleInjectorWebApiDependencyResolver(container);
-
         }
     }
 }
-

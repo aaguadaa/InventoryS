@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Model
@@ -14,5 +15,8 @@ namespace Domain.Model
         public string Description { get; set; }
         public ICollection<User> Users { get; set; }
         public ICollection<Check> Checks { get; set; }
+        public DateTime Date { get; set; }
+        public List<string> Notes { get; set; }
+        public Inventory Inventory { get; set; } // Propiedad de navegación hacia la clase Inventory
     }
 }

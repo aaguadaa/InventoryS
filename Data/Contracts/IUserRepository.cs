@@ -9,5 +9,7 @@ namespace Data.Contracts
         User Login(string username, string password);
         bool RelateInventory(int idUser, int idInventory);
         IEnumerable<User> GetAll();
+        User GetByUsername(string username);
+        object GetByUsernameAndPassword(string username, string password);
     }
 }

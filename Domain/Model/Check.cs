@@ -19,6 +19,7 @@ namespace Domain.Model
         public DateTime? ModifiedDate { get; set; }
         public User User { get; set; }
         public Account Account { get; set; }
-        public string Note { get; set; }
+        public List<string> Notes { get; set; }
+        public int ProductId { get; set; }
     }
 }

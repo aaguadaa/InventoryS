@@ -1,49 +1,46 @@
 ﻿using Business.Contracts;
 using Data.Contracts;
 using Domain.Model;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Business.Implementation
+namespace Business.Services
 {
     public class ProductService : IProductService
     {
-        private readonly IProductRepository _productRepo;
-        public ProductService(IProductRepository productRepo)
-        {
-            _productRepo = productRepo;
-        }
-        public int Add(Product product)
-        {
-            if (product.Id <= 0) return 0;
-            if (string.IsNullOrEmpty(product.Categoria)) return 0;
-            if (string.IsNullOrEmpty(product.Descripcion)) return 0;
-            if (string.IsNullOrEmpty(product.Status)) return 0;
-            return _productRepo.Add(product);
-        }
+        private readonly IProductRepository _productRepository;
 
-        public bool Delete(int id)
+        public ProductService(IProductRepository productRepository)
         {
-            if (id <= 0) return false;
-            return (_productRepo.Delete(id));
+            _productRepository = productRepository;
         }
-
-        public Product Get(int id)
+        public async Task<int> AddProductAsync(Product product)
         {
-            Product product = _productRepo.Get(id);
-            return product;
+            return await _productRepository.AddProductAsync(product);
         }
-
-        public bool Update(Product product)
+        public async Task<bool> UpdateProductAsync(Product product)
         {
-            if (product.Id <= 0) return false;
-            if (string.IsNullOrEmpty(product.Categoria)) return false;
-            if (string.IsNullOrEmpty(product.Descripcion)) return false;
-            if (string.IsNullOrEmpty(product.Status)) return false;
-            return _productRepo.Update(product);
+            return await _productRepository.UpdateProductAsync(product);
+        }
+        public async Task<bool> DeleteProductAsync(int id)
+        {
+            return await _productRepository.DeleteProductAsync(id);
+        }
+        public async Task<Product> GetProductByIdAsync(int id)
+        {
+            return await _productRepository.GetProductByIdAsync(id);
+        }
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        {
+            return await _productRepository.GetAllProductsAsync();
+        }
+        public async Task<IEnumerable<Product>> GetAvailableProductsAsync()
+        {
+            return await _productRepository.GetAvailableProductsAsync();
+        }
+        public async Task<IEnumerable<Product>> GetUnavailableProductsAsync()
+        {
+            return await _productRepository.GetUnavailableProductsAsync();
         }
     }
 }

@@ -1,96 +1,57 @@
 ﻿using Data.Contracts;
 using Domain.Model;
-using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Data.Implementation
+namespace Data.Repositories
 {
     public class ProductRepository : IProductRepository
     {
         private readonly InventoryStevDBContext _dbContext;
+
         public ProductRepository(InventoryStevDBContext dbContext)
         {
             _dbContext = dbContext;
         }
-        public int Add(Product entity)
+        public async Task<int> AddProductAsync(Product product)
         {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity), "Entity cannot be null.");
-
-            _dbContext.Set<Product>().Add(entity);
-            _dbContext.SaveChanges();
-
-            return entity.Id;
+            _dbContext.Products.Add(product);
+            await _dbContext.SaveChangesAsync();
+            return product.Id;
         }
-        public bool Delete(int id)
+        public async Task<bool> UpdateProductAsync(Product product)
         {
-            var entity = _dbContext.Set<Product>().Find(id);
-
-            if (entity == null)
-                return false;
-
-            _dbContext.Set<Product>().Remove(entity);
-            _dbContext.SaveChanges();
-
+            _dbContext.Entry(product).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
             return true;
         }
-        public Product Get(int id)
+        public async Task<bool> DeleteProductAsync(int id)
         {
-            return _dbContext.Set<Product>().Find(id);
-        }
-        public IEnumerable<Product> GetAll(Expression<Func<Product, bool>> filter = null, Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = null, string includeProperties = "")
-        {
-            IQueryable<Product> query = _dbContext.Set<Product>();
-
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-
-            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            if (orderBy != null)
-            {
-                return orderBy(query).ToList();
-            }
-            else
-            {
-                return query.ToList();
-            }
-        }
-        public Product GetById(int id, params Expression<Func<Product, object>>[] includeProperties)
-        {
-            IQueryable<Product> query = _dbContext.Set<Product>();
-
-            foreach (var includeProperty in includeProperties)
-            {
-                query = query.Include(includeProperty);
-            }
-
-            return query.SingleOrDefault(p => p.Id == id);
-        }
-        public bool Update(Product entity)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity), "Entity cannot be null.");
-
-            var existingEntity = _dbContext.Set<Product>().Find(entity.Id);
-
-            if (existingEntity == null)
+            var product = await _dbContext.Products.FindAsync(id);
+            if (product == null)
                 return false;
 
-            _dbContext.Entry(existingEntity).CurrentValues.SetValues(entity);
-            _dbContext.SaveChanges();
-
+            _dbContext.Products.Remove(product);
+            await _dbContext.SaveChangesAsync();
             return true;
+        }
+        public async Task<Product> GetProductByIdAsync(int id)
+        {
+            return await _dbContext.Products.FindAsync(id);
+        }
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        {
+            return await _dbContext.Products.ToListAsync();
+        }
+        public async Task<IEnumerable<Product>> GetAvailableProductsAsync()
+        {
+            return await _dbContext.Products.Where(p => p.Status == "Disponible").ToListAsync();
+        }
+        public async Task<IEnumerable<Product>> GetUnavailableProductsAsync()
+        {
+            return await _dbContext.Products.Where(p => p.Status == "No Disponible").ToListAsync();
         }
     }
 }

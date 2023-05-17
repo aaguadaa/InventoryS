@@ -1,21 +1,16 @@
-﻿using Domain.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Domain.Model;
 
 namespace Business.Contracts
 {
     public interface IInventoryService
-
     {
-        int Add(Domain.Model.Inventory inventory);
-        //Read
-        Domain.Model.Inventory Get(int id);
-        //Update
-        bool Update(Domain.Model.Inventory inventory);
-        //Delete
-        bool Delete(int id);
+        Task<IEnumerable<Product>> GetInventory();
+        Task<Product> GetProductById(int id);
+        Task<int> AddProduct(Product product);
+        Task<bool> UpdateProduct(Product product);
+        Task<bool> DeleteProduct(int id);
     }
 }

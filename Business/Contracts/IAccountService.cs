@@ -1,10 +1,11 @@
 ﻿using Domain.Model;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Data.Contracts
+namespace Business.Contracts
 {
-    public interface IAccountRepository
+    public interface IAccountService
     {
         List<Account> GetAccountsByDate(DateTime date);
         List<Account> GetAccountsByMonth(int month, int year);
@@ -13,6 +14,9 @@ namespace Data.Contracts
         bool AddAccount(Account account);
         bool UpdateAccount(Account account);
         bool DeleteAccount(int accountId);
-        bool AddNoteToAccount(int accountId, string note);
+        List<Check> GetChecksByAccountId(int accountId);
+        Task<bool> AddCheck(Check check);
+        Task<bool> UpdateCheck(Check check);
+        Task<bool> DeleteCheck(int checkId);
     }
 }

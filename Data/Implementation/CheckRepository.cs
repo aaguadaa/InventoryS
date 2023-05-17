@@ -1,13 +1,13 @@
-﻿using Data.Contracts;
-using Domain.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Runtime.Remoting.Contexts;
 using System.Threading.Tasks;
+using Data.Contracts;
+using Domain.Model;
 
-namespace Data.Implementation
+namespace Data.Repositories
 {
     public class CheckRepository : ICheckRepository
     {
@@ -17,86 +17,77 @@ namespace Data.Implementation
         {
             _dbContext = dbContext;
         }
-        public int Add(Check entity)
+        public async Task<IEnumerable<Check>> GetAllAsync()
         {
-            if (entity == null) return 0;
-            _dbContext.Checks.Add(entity);
-            _dbContext.SaveChanges();
+            return await _dbContext.Set<Check>().ToListAsync();
+        }
+        public async Task<IEnumerable<Check>> GetChecksByDateAsync(DateTime date)
+        {
+            return await _dbContext.Set<Check>().Where(c => c.CreatedDate.Date == date.Date).ToListAsync();
+        }
+        public async Task<IEnumerable<Check>> GetChecksByMonthAndYearAsync(int month, int year)
+        {
+            return await _dbContext.Set<Check>().Where(c => c.CreatedDate.Month == month && c.CreatedDate.Year == year).ToListAsync();
+        }
+        public async Task<IEnumerable<Check>> GetChecksByYearAsync(int year)
+        {
+            return await _dbContext.Set<Check>().Where(c => c.CreatedDate.Year == year).ToListAsync();
+        }
+        public async Task AddNoteToCheckAsync(int checkId, string note)
+        {
+            var check = await _dbContext.Set<Check>().FindAsync(checkId);
+            if (check != null)
+            {
+                check.Notes.Add(note);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+        public async Task<int> AddCheckAsync(Check entity)
+        {
+            _dbContext.Set<Check>().Add(entity);
+            await _dbContext.SaveChangesAsync();
             return entity.Id;
         }
-        public bool Delete(int id)
+        public async Task<bool> UpdateCheckAsync(Check entity)
         {
-            Check entityToDelete = _dbContext.Checks.Find(id);
-            if (entityToDelete == null) return false;
-            _dbContext.Checks.Remove(entityToDelete);
-            _dbContext.SaveChanges();
+            _dbContext.Entry(entity).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
             return true;
         }
-        public Check Get(int id)
+        public async Task<bool> DeleteCheckAsync(int id)
         {
-            return _dbContext.Checks.Find(id);
-        }
-        public IEnumerable<Check> GetAll(Expression<Func<Check, bool>> filter = null, Func<IQueryable<Check>, IOrderedQueryable<Check>> orderBy = null, string includeProperties = "")
-        {
-            IQueryable<Check> query = _dbContext.Checks;
+            var check = await _dbContext.Set<Check>().FindAsync(id);
+            if (check == null)
+                return false;
 
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-
-            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            if (orderBy != null)
-            {
-                return orderBy(query).ToList();
-            }
-            else
-            {
-                return query.ToList();
-            }
-        }
-        public Check GetById(int id, params Expression<Func<Check, object>>[] includeProperties)
-        {
-            IQueryable<Check> query = _dbContext.Checks;
-
-            foreach (var includeProperty in includeProperties)
-            {
-                query = query.Include(includeProperty);
-            }
-
-            return query.FirstOrDefault(c => c.Id == id);
-        }
-        public bool Update(Check entity)
-        {
-            var existingEntity = _dbContext.Checks.Find(entity.Id);
-            if (existingEntity == null) return false;
-            _dbContext.Entry(existingEntity).CurrentValues.SetValues(entity);
-            _dbContext.SaveChanges();
+            _dbContext.Set<Check>().Remove(check);
+            await _dbContext.SaveChangesAsync();
             return true;
         }
-        public async Task<IEnumerable<Check>> GetChecksByDate(DateTime date)
+        public async Task<Check> GetByIdCheckAsync(int id)
         {
-            return await _dbContext.Checks.Where(c => c.CreatedDate.Date == date.Date).ToListAsync();
+            return await _dbContext.Set<Check>().FindAsync(id);
         }
-        public async Task<IEnumerable<Check>> GetChecksByUserId(int userId)
+        public List<Check> GetChecksByAccountId(int accountId)
         {
-            return await _dbContext.Checks.Where(c => c.User.Id == userId).ToListAsync();
+            return _dbContext.Checks.Where(c => c.Account.Id == accountId).ToList();
         }
-        public async Task<IEnumerable<Check>> GetAllByDateAsync(DateTime date)
+        public async Task<Product> GetProductByIdAsync(int productId)
         {
-            return await _dbContext.Checks
-                                     .Where(c => c.CreatedDate.Date == date.Date)
-                                     .ToListAsync();
+            return await _dbContext.Products.FindAsync(productId);
         }
-        public async Task<IEnumerable<Check>> GetAllByUserIdAsync(int userId)
+        public async Task<IEnumerable<Check>> GetChecksByMonthAsync(int month)
         {
-            return await _dbContext.Checks
-                                     .Where(c => c.User.Id == userId)
-                                     .ToListAsync();
+            DateTime currentDate = DateTime.Now;
+            int currentYear = currentDate.Year;
+
+            return await Task.Run(() =>
+            {
+                // Obtener los cortes por mes y año
+                return _dbContext.Checks
+                    .Where(c => c.CreatedDate.Month == month && c.CreatedDate.Year == currentYear)
+                    .ToList();
+            });
         }
     }
 }

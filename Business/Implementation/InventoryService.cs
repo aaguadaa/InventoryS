@@ -1,52 +1,97 @@
-﻿using Business.Contracts;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Business.Contracts;
 using Data.Contracts;
 using Domain.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Business.Implementation
+namespace Business.Services
 {
     public class InventoryService : IInventoryService
     {
-        private readonly IInventoryRepository _inventoryRepo;
-        public InventoryService(IInventoryRepository projectRepo)
+        private readonly IProductRepository _productRepository;
+        private readonly ICheckRepository _checkRepository;
+        public InventoryService(IProductRepository productRepository, ICheckRepository checkRepository)
         {
-            _inventoryRepo = projectRepo;
+            _productRepository = productRepository;
+            _checkRepository = checkRepository;
         }
-        public int Add(Domain.Model.Inventory l)
+        public async Task<IEnumerable<Product>> GetInventory()
         {
-            if (l.Id <= 0) return 0;
-            if (string.IsNullOrEmpty(l.Categoria)) return 0;
-            if (string.IsNullOrEmpty(l.Description)) return 0;
-            return _inventoryRepo.Add(l);
+            return await _productRepository.GetAllProductsAsync();
         }
+        public async Task<Product> GetProductById(int id)
+        {
+            return await _productRepository.GetProductByIdAsync(id);
+        }
+        public async Task<int> AddProduct(Product product)
+        {
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product));
+            }
 
-        public bool Delete(int id)
-        {
-            if (id <= 0) return false;
-            return (_inventoryRepo.Delete(id));
-        }
+            // Realizar otras validaciones u operaciones de negocio antes de guardar el producto
 
-        public Domain.Model.Inventory Get(int id)
-        {
-            Domain.Model.Inventory l = _inventoryRepo.Get(id);
-            return l;
+            product.Status = "Disponible";
+            return await _productRepository.AddProductAsync(product);
         }
-
-        public bool Update(Domain.Model.Inventory l)
+        public async Task<bool> UpdateProduct(Product product)
         {
-            if (l.Id <= 0) return false;
-            if (string.IsNullOrEmpty(l.Categoria)) return false;
-            if (string.IsNullOrEmpty(l.Description)) return false;
-            return _inventoryRepo.Update(l);
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product));
+            }
+
+            // Realizar otras validaciones u operaciones de negocio antes de actualizar el producto
+
+            return await _productRepository.UpdateProductAsync(product);
         }
-
-        public bool RelateProduct(Domain.Model.Product newProduct)
+        public async Task<bool> DeleteProduct(int id)
         {
-            throw new NotImplementedException();
+            // Realizar otras validaciones u operaciones de negocio antes de eliminar el producto
+
+            return await _productRepository.DeleteProductAsync(id);
+        }
+        public async Task<IEnumerable<Check>> GetChecksByAccountId(int accountId)
+        {
+            return  _checkRepository.GetChecksByAccountId(accountId);
+        }
+        public async Task<int> AddCheck(Check check)
+        {
+            if (check == null)
+            {
+                throw new ArgumentNullException(nameof(check));
+            }
+
+            // Realizar otras validaciones u operaciones de negocio antes de guardar el corte del día
+
+            // Modificar el estado del producto guardado en el inventario a "No Disponible"
+            var product = await _productRepository.GetProductByIdAsync(check.Product.Id);
+            if (product != null)
+            {
+                product.Status = "No Disponible";
+                await _productRepository.UpdateProductAsync(product);
+            }
+
+            return await _checkRepository.AddCheckAsync(check);
+        }
+        public async Task<bool> AddNoteToCheck(int checkId, string note)
+        {
+            if (string.IsNullOrEmpty(note))
+            {
+                throw new ArgumentNullException(nameof(note));
+            }
+
+            var check = await _checkRepository.GetByIdCheckAsync(checkId);
+            if (check != null)
+            {
+                check.Notes.Add(note);
+                await _checkRepository.UpdateCheckAsync(check);
+                return true;
+            }
+
+            return false;
         }
     }
 }

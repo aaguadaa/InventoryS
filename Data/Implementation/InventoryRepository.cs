@@ -12,6 +12,13 @@ namespace Data.Implementation
 {
     public class InventoryRepository : IInventoryRepository
     {
+        private readonly InventoryStevDBContext _dbContext;
+
+        public InventoryRepository(InventoryStevDBContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public int Add(Domain.Model.Inventory entity)
         {
             if (entity == null) return 0;
@@ -21,18 +28,15 @@ namespace Data.Implementation
                 ctx.SaveChanges();
                 return entity.Id;
             }
-
         }
         public bool Delete(int id)
         {
             using (var ctx = new InventoryStevDBContext())
             {
-
                 Domain.Model.Inventory l = ctx.Inventories.SingleOrDefault(p => p.Id == id);
                 if (l == null) return false;
 
                 ctx.Inventories.Remove(l);
-
                 ctx.SaveChanges();
                 return true;
             }
@@ -66,13 +70,13 @@ namespace Data.Implementation
             if (idInventory <= 0) return false;
             using (var ctx = new InventoryStevDBContext())
             {
-                //Obtenemos elusuario y el proyecto a relacionar
+                //Obtenemos el usuario y el proyecto a relacionar
                 var user = ctx.Users.SingleOrDefault(x => x.Id == idUser);
                 var inventory = ctx.Accounts.SingleOrDefault(x => x.Id == idInventory);
                 //validamos si existe
                 if (user == null || inventory == null) return false;
 
-                var existingRelation = ctx.Checks.SingleOrDefault(up => up.User.Id == idUser && up.account.Id == idInventory);
+                var existingRelation = ctx.Checks.SingleOrDefault(up => up.User.Id == idUser && up.Account.Id == idInventory);
                 if (existingRelation != null) return true; // checamos si ya existe la relacion y la validamos
 
                 //Creamos el nuevo objeto
@@ -150,6 +154,50 @@ namespace Data.Implementation
                 }
                 return query.ToList();
             }
+        }
+        public async Task<Product> GetProductByIdAsync(int productId)
+        {
+            using (var ctx = new InventoryStevDBContext())
+            {
+                return await ctx.Products.FindAsync(productId);
+            }
+        }
+        public async Task<bool> UpdateProductAsync(Product product)
+        {
+            using (var ctx = new InventoryStevDBContext())
+            {
+                ctx.Entry(product).State = EntityState.Modified;
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+        }
+        public async Task<Product> GetProductById(int productId)
+        {
+            return await Task.FromResult(_dbContext.Products.FirstOrDefault(p => p.Id == productId));
+        }
+        public async Task<IEnumerable<Product>> GetProducts()
+        {
+            using (var dbContext = new InventoryStevDBContext())
+            {
+                return await Task.FromResult(dbContext.Products.ToList());
+            }
+        }
+        public async Task<bool> DeleteProduct(int productId)
+        {
+            var product = await GetProductById(productId);
+            if (product != null)
+            {
+                _dbContext.Products.Remove(product);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+        public async Task<bool> AddProduct(Product product)
+        {
+            _dbContext.Products.Add(product);
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }
