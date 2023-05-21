@@ -22,5 +22,10 @@ namespace Business.Contracts
         Task<bool> AddCheck(Check check);
         Task<bool> UpdateCheck(Check check);
         Task<bool> DeleteCheck(int checkId);
+        List<User> GetAllUsers();
+        bool DeleteUser(int id);
+        bool UpdateUser(User user);
+        int AddUser(User user);
+        User GetUserById(int id);
     }
 }

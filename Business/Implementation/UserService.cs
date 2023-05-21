@@ -165,7 +165,49 @@ namespace Business.Implementation
             List<Check> checkList = checks.ToList();
             return checkList;
         }
+        public bool DeleteUser(int id)
+        {
+            User existingUser = _userRepository.GetUserById(id);
+            if (existingUser == null)
+            {
+                return false;
+            }
+
+            return _userRepository.DeleteUser(existingUser);
+        }
+
+        public bool UpdateUser(User user)
+        {
+            User existingUser = _userRepository.GetUserById(user.Id);
+            if (existingUser == null)
+            {
+                return false;
+            }
+
+            existingUser.Name = user.Name;
+            existingUser.Password = user.Password;
+            existingUser.UserName = user.UserName;
+            existingUser.IsBlocked = user.IsBlocked;
+
+            return _userRepository.UpdateUser(existingUser);
+        }
+
+        public int AddUser(User user)
+        {
+            return _userRepository.AddUser(user);
+        }
+
+        public User GetUserById(int id)
+        {
+            return _userRepository.GetUserById(id);
+        }
+
         public bool AddProduct(Product product)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<User> GetAllUsers()
         {
             throw new NotImplementedException();
         }

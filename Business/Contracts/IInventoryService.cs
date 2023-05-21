@@ -12,5 +12,9 @@ namespace Business.Contracts
         Task<int> AddProduct(Product product);
         Task<bool> UpdateProduct(Product product);
         Task<bool> DeleteProduct(int id);
+        int Add(Domain.Model.Inventory l);
+        bool Delete(int id);
+        Domain.Model.Inventory Get(int id);
+        bool Update(Domain.Model.Inventory l);
     }
 }

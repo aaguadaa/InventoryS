@@ -1,63 +1,81 @@
-﻿using Business.Contracts;
-using Domain;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Business.Contracts;
+using Domain.Model;
 
 namespace WebAPI.Controllers
 {
-
-    [RoutePrefix("user")]
+    [RoutePrefix("api/users")]
     public class UserController : ApiController
     {
         private readonly IUserService _userService;
+
         public UserController(IUserService userService)
         {
-
             _userService = userService;
         }
 
-        [Route("")]
-        [HttpPost]
-        public IHttpActionResult Create([FromBody] User user)
-        {
-            if (user == null) return BadRequest("Request is null");
-            int id = _userService.Add(user);
-            if (id < 0) return BadRequest("Unable to Create User");
-            var payload = new { Id = id };
-            return Ok(payload);
-        }
-
-
-        [Route("{id}")]
         [HttpGet]
-        public IHttpActionResult Get(int id)
+        [Route("")]
+        public IHttpActionResult GetAllUsers()
         {
-            User user = _userService.Get(id);
-            if (user == null) return NotFound();
+            List<User> users = _userService.GetAllUsers();
+            return Ok(users);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        public IHttpActionResult GetUserById(int id)
+        {
+            User user = _userService.GetUserById(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
             return Ok(user);
         }
 
-        [Route("{id}")]
+        [HttpPost]
+        [Route("")]
+        public IHttpActionResult CreateUser(User user)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            int userId = _userService.AddUser(user);
+            return Ok(new { UserId = userId });
+        }
+
         [HttpPut]
-        public IHttpActionResult Update(int id, [FromBody] User user)
+        [Route("{id}")]
+        public IHttpActionResult UpdateUser(int id, User user)
         {
-            if (user == null) return BadRequest("Request is null");
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             user.Id = id;
-            bool updated = _userService.Update(user);
-            if (!updated) return BadRequest("Unable to update User");
+            bool isUpdated = _userService.UpdateUser(user);
+            if (!isUpdated)
+            {
+                return NotFound();
+            }
             return Ok(user);
         }
 
-        [Route("{id}")]
         [HttpDelete]
-        public IHttpActionResult Delete(int id)
+        [Route("{id}")]
+        public IHttpActionResult DeleteUser(int id)
         {
-            bool deleted = _userService.Delete(id);
-            if (!deleted) return NotFound();
+            bool isDeleted = _userService.DeleteUser(id);
+            if (!isDeleted)
+            {
+                return NotFound();
+            }
             return Ok();
         }
     }

@@ -162,7 +162,6 @@
     <Folder Include="Views\Check\" />
     <Folder Include="Views\Inventory\" />
     <Folder Include="Views\Product\" />
-    <Folder Include="Views\Role\" />
     <Folder Include="Views\User\" />
   </ItemGroup>
   <ItemGroup>

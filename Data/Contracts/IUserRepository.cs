@@ -11,5 +11,9 @@ namespace Data.Contracts
         IEnumerable<User> GetAll();
         User GetByUsername(string username);
         object GetByUsernameAndPassword(string username, string password);
+        int AddUser(User user);
+        bool UpdateUser(User user);
+        bool DeleteUser(User user);
+        User GetUserById(int id);
     }
 }

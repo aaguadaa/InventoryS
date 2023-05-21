@@ -179,5 +179,35 @@ namespace Data.Implementation
                 }
             }
         }
+
+        public User GetByUsername(string username)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object GetByUsernameAndPassword(string username, string password)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int AddUser(User user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool UpdateUser(User user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool DeleteUser(User user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public User GetUserById(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
