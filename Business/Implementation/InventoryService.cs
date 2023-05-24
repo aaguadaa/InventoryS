@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Business.Contracts;
 using Data.Contracts;
+using Data.Implementation;
 using Domain.Model;
 
 namespace Business.Services
@@ -11,10 +12,14 @@ namespace Business.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ICheckRepository _checkRepository;
-        public InventoryService(IProductRepository productRepository, ICheckRepository checkRepository)
+        private readonly IInventoryRepository _inventoryRepository;
+
+        public InventoryService(IProductRepository productRepository, ICheckRepository checkRepository, IInventoryRepository inventoryRepository)
         {
             _productRepository = productRepository;
             _checkRepository = checkRepository;
+            _inventoryRepository = inventoryRepository;
+
         }
         public async Task<IEnumerable<Product>> GetInventory()
         {
@@ -55,8 +60,10 @@ namespace Business.Services
         }
         public async Task<IEnumerable<Check>> GetChecksByAccountId(int accountId)
         {
-            return  _checkRepository.GetChecksByAccountId(accountId);
+            var checks = _checkRepository.GetChecksByAccountId(accountId);
+            return await Task.FromResult(checks);
         }
+
         public async Task<int> AddCheck(Check check)
         {
             if (check == null)
@@ -92,6 +99,36 @@ namespace Business.Services
             }
 
             return false;
+        }
+
+        public int Add(Domain.Model.Inventory inventory)
+        {
+            if (inventory == null)
+            {
+                throw new ArgumentNullException(nameof(inventory));
+            }
+
+            if (_inventoryRepository.InventoryExists(inventory.Id))
+            {
+                throw new InvalidOperationException("El inventario ya existe.");
+            }
+
+            return _inventoryRepository.Add(inventory);
+        }
+
+        public bool Delete(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Domain.Model.Inventory Get(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Update(Domain.Model.Inventory l)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -84,9 +84,9 @@
     <Compile Include="Implementation\UserRepository.cs" />
     <Compile Include="InventoryStevDBContext.cs" />
     <Compile Include="InventoryStevInializer.cs" />
-    <Compile Include="Migrations\202305130510048_init.cs" />
-    <Compile Include="Migrations\202305130510048_init.designer.cs">
-      <DependentUpon>202305130510048_init.cs</DependentUpon>
+    <Compile Include="Migrations\202305240850336_stev.cs" />
+    <Compile Include="Migrations\202305240850336_stev.designer.cs">
+      <DependentUpon>202305240850336_stev.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -102,8 +102,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202305130510048_init.resx">
-      <DependentUpon>202305130510048_init.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202305240850336_stev.resx">
+      <DependentUpon>202305240850336_stev.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Web.Http;
-using SimpleInjector;
-using SimpleInjector.Lifestyles;
-using SimpleInjector.Integration.WebApi;
-using Business.Contracts;
+﻿using Business.Contracts;
 using Business.Implementation;
+using Business.Services;
+using Data;
 using Data.Contracts;
 using Data.Implementation;
-using Business.Services;
 using Data.Repositories;
+using SimpleInjector;
+using SimpleInjector.Integration.WebApi;
+using SimpleInjector.Lifestyles; // Agregar esta referencia
+using System.Web.Http;
 
 namespace WebAPI
 {
@@ -19,8 +16,20 @@ namespace WebAPI
     {
         public static void Register(HttpConfiguration config)
         {
-            // SimpleInjector configuration
-            var container = new SimpleInjector.Container();
+            // Web API configuration and services
+
+            // Web API routes
+            config.MapHttpAttributeRoutes();
+
+            config.Routes.MapHttpRoute(
+                name: "DefaultApi",
+                routeTemplate: "api/{controller}/{id}",
+                defaults: new { id = RouteParameter.Optional }
+            );
+
+            var container = new Container();
+
+            // Set the default scoped lifestyle
             container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
 
             // Register services and repositories
@@ -30,21 +39,16 @@ namespace WebAPI
             container.Register<IInventoryRepository, InventoryRepository>(Lifestyle.Scoped);
             container.Register<IProductService, ProductService>(Lifestyle.Scoped);
             container.Register<IProductRepository, ProductRepository>(Lifestyle.Scoped);
+            container.Register<ICheckService, CheckService>(Lifestyle.Scoped);
+            container.Register<ICheckRepository, CheckRepository>(Lifestyle.Scoped);
+            container.Register<IAccountService, AccountService>(Lifestyle.Scoped);
+            container.Register<IAccountRepository, AccountRepository>(Lifestyle.Scoped);
+            container.Register<InventoryStevDBContext>(Lifestyle.Scoped);
 
-            // Verify the container's configuration
             container.Verify();
 
-            // Set the dependency resolver for Web API to use SimpleInjector
+            // Set the dependency resolver for Web API
             config.DependencyResolver = new SimpleInjectorWebApiDependencyResolver(container);
-
-            // Web API configuration and routes
-            config.MapHttpAttributeRoutes();
-
-            config.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );
         }
     }
 }

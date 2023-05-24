@@ -16,7 +16,7 @@ namespace Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Check> Checks { get; set; }
         public DbSet<Domain.Model.Inventory> Inventories { get; set; }
-        public InventoryStevDBContext() : base("inventory")
+        public InventoryStevDBContext() : base("InventoryStev")
         {
 
         }
