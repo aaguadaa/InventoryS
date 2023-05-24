@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Model
 {
@@ -17,6 +18,11 @@ namespace Domain.Model
         public string UserName { get; set; }
         public bool IsBlocked { get; set; }
         public virtual Inventory Inventory { get; set; }
-        public virtual Account Account { get; set; }
+        public virtual ICollection<Account> Accounts { get; set; }  // Cambio de tipo a ICollection<Account>
+
+        public User()
+        {
+            Accounts = new List<Account>();  // Inicialización de la colección en el constructor
+        }
     }
 }

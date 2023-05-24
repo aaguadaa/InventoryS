@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Data.Contracts
 {
-    public interface IProductRepository
+    public interface IProductRepository : IGenericRepository<Product>
     {
         Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<IEnumerable<Product>> GetAvailableProductsAsync();

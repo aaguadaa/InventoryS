@@ -23,7 +23,6 @@ namespace Data.Implementation
                 ctx.SaveChanges();
                 return entity.Id;
             }
-
         }
         public bool Delete(int id)
         {
@@ -46,39 +45,6 @@ namespace Data.Implementation
                 return currentUser;
             }
         }
-        public ICollection<Account> GetAccounts(int idUser)
-        {
-            if (idUser <= 0) return null;
-            using (var ctx = new InventoryStevDBContext())
-            {
-                var userAccounts = ctx.Checks.Where(up => up.User.Id == idUser)
-                                    .Include(up => up.Account).Select(up => up.Account).ToList();
-
-                return userAccounts;
-            }
-        }
-        public bool RelateAccount(int idUser, int idAccount)
-        {
-            if (idUser <= 0) return false;
-            if (idAccount <= 0) return false;
-            using (var ctx = new InventoryStevDBContext())
-            {
-                //Obtenemos el usuario y la cuenta a relacionar
-                var user = ctx.Users.SingleOrDefault(x => x.Id == idUser);
-                var account = ctx.Accounts.SingleOrDefault(x => x.Id == idAccount);
-                //validamos si existe
-                if (user == null || account == null) return false;
-
-                var existingRelation = ctx.Checks.SingleOrDefault(up => up.User.Id == idUser && up.Account.Id == idAccount);
-                if (existingRelation != null) return true; // checamos si ya existe la relacion y la validamos
-
-                //Creamos el nuevo objeto
-                var userAccount = new Check { User = user, Account = account };
-                ctx.Checks.Add(userAccount);
-                ctx.SaveChanges();
-            }
-            return true;
-        }
         public bool Update(User entity)
         {
             if (entity == null) return false;
@@ -96,52 +62,11 @@ namespace Data.Implementation
         }
         public User Login(string username, string password)
         {
-            if (username == null || password == null) return null;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) return null;
             using (var ctx = new InventoryStevDBContext())
             {
-                User currentUser = ctx.Users.Where(u => u.UserName == username && u.Password == password).FirstOrDefault();
+                User currentUser = ctx.Users.FirstOrDefault(u => u.UserName == username && u.Password == password);
                 return currentUser;
-            }
-
-        }
-        public ICollection<Account> GetAccount(int idUser)
-        {
-            if (idUser <= 0) return null;
-            using (var ctx = new InventoryStevDBContext())
-            {
-                var userInventory = ctx.Checks.Where(up => up.User.Id == idUser)
-                                    .Include(up => up.Account).Select(up => up.Account).ToList();
-
-                return userInventory;
-            }
-        }
-        public bool RelateInventory(int idUser, int idInventory)
-        {
-            if (idUser <= 0) return false;
-            if (idInventory <= 0) return false;
-            using (var ctx = new InventoryStevDBContext())
-            {
-                //Obtenemos elusuario y el proyecto a relacionar
-                var user = ctx.Users.SingleOrDefault(x => x.Id == idUser);
-                var inventory = ctx.Accounts.SingleOrDefault(x => x.Id == idInventory);
-                //validamos si existe
-                if (user == null || inventory == null) return false;
-
-                var existingRelation = ctx.Checks.SingleOrDefault(up => up.User.Id == idUser && up.Account.Id == idInventory);
-                if (existingRelation != null) return true; // checamos si ya existe la relacion y la validamos
-
-                //Creamos el nuevo objeto
-                var userInventory = new Check { User = user, Account = inventory };
-                ctx.Checks.Add(userInventory);
-                ctx.SaveChanges();
-            }
-            return true;
-        }
-        public IEnumerable<User> GetAll()
-        {
-            using (var ctx = new InventoryStevDBContext())
-            {
-                return ctx.Users.ToList();
             }
         }
         public User GetById(int id, params Expression<Func<User, object>>[] includeProperties)
@@ -153,6 +78,7 @@ namespace Data.Implementation
                 {
                     query = query.Include(includeProperty);
                 }
+
                 return query.FirstOrDefault(x => x.Id == id);
             }
         }
@@ -179,35 +105,105 @@ namespace Data.Implementation
                 }
             }
         }
-
         public User GetByUsername(string username)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(username)) return null;
+            using (var ctx = new InventoryStevDBContext())
+            {
+                User currentUser = ctx.Users.FirstOrDefault(u => u.UserName == username);
+                return currentUser;
+            }
         }
-
         public object GetByUsernameAndPassword(string username, string password)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) return null;
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var currentUser = ctx.Users.FirstOrDefault(u => u.UserName == username && u.Password == password);
+                return currentUser;
+            }
         }
-
-        public int AddUser(User user)
+        public bool AddInventoryToUser(int userId, int inventoryId)
         {
-            throw new NotImplementedException();
+            if (userId <= 0 || inventoryId <= 0) return false;
+
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var user = ctx.Users.Include(u => u.Inventory).SingleOrDefault(u => u.Id == userId);
+                var inventory = ctx.Inventories.SingleOrDefault(i => i.Id == inventoryId);
+
+                if (user == null || inventory == null) return false;
+
+                user.Inventory = inventory;
+                ctx.SaveChanges();
+
+                return true;
+            }
         }
-
-        public bool UpdateUser(User user)
+        public bool AddAccountToUser(int userId, int accountId)
         {
-            throw new NotImplementedException();
+            if (userId <= 0 || accountId <= 0) return false;
+
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var user = ctx.Users.SingleOrDefault(u => u.Id == userId);
+                var account = ctx.Accounts.SingleOrDefault(a => a.Id == accountId);
+
+                if (user == null || account == null) return false;
+
+                user.Accounts.Add(account);
+                ctx.SaveChanges();
+            }
+
+            return true;
         }
-
-        public bool DeleteUser(User user)
+        public bool AddCheckToAccount(int accountId, Check check)
         {
-            throw new NotImplementedException();
+            if (accountId <= 0 || check == null) return false;
+
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var account = ctx.Accounts.Include(a => a.Checks).SingleOrDefault(a => a.Id == accountId);
+
+                if (account == null) return false;
+
+                account.Checks.Add(check);
+                ctx.SaveChanges();
+            }
+
+            return true;
         }
-
-        public User GetUserById(int id)
+        public bool AddProductToInventory(int inventoryId, Product product)
         {
-            throw new NotImplementedException();
+            if (inventoryId <= 0 || product == null) return false;
+
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var inventory = ctx.Inventories.Include(i => i.Products).SingleOrDefault(i => i.Id == inventoryId);
+
+                if (inventory == null) return false;
+
+                inventory.Products.Add(product);
+                ctx.SaveChanges();
+            }
+
+            return true;
+        }
+        public bool AddNoteToCheck(int checkId, string note)
+        {
+            if (checkId <= 0 || string.IsNullOrEmpty(note)) return false;
+
+            using (var ctx = new InventoryStevDBContext())
+            {
+                var check = ctx.Checks.SingleOrDefault(c => c.Id == checkId);
+
+                if (check == null) return false;
+
+                check.Notes.Add(note);
+                ctx.SaveChanges();
+            }
+
+            return true;
         }
     }
 }

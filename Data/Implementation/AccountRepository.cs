@@ -1,80 +1,108 @@
-﻿using Data.Contracts;
-using Domain.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+using System.Data.Entity;
+using Data.Contracts;
+using Domain.Model;
+using System.Linq.Expressions;
 
 namespace Data.Implementation
 {
     public class AccountRepository : IAccountRepository
     {
-        private readonly InventoryStevDBContext _dbContext;
-        public AccountRepository(InventoryStevDBContext dbContext)
+        public int Add(Account entity)
         {
-            _dbContext = dbContext;
+            using (var context = new InventoryStevDBContext())
+            {
+                context.Accounts.Add(entity);
+                context.SaveChanges();
+                return entity.Id;
+            }
+        }
+        public Account Get(int id)
+        {
+            using (var context = new InventoryStevDBContext())
+            {
+                return context.Accounts.FirstOrDefault(a => a.Id == id);
+            }
+        }
+        public Account GetById(int id, params Expression<Func<Account, object>>[] includeProperties)
+        {
+            using (var context = new InventoryStevDBContext())
+            {
+                IQueryable<Account> query = context.Accounts;
+                foreach (Expression<Func<Account, object>> includeProperty in includeProperties)
+                {
+                    query = query.Include(includeProperty);
+                }
+                return query.FirstOrDefault(a => a.Id == id);
+            }
+        }
+        public bool Update(Account entity)
+        {
+            using (var context = new InventoryStevDBContext())
+            {
+                context.Entry(entity).State = EntityState.Modified;
+                context.SaveChanges();
+                return true;
+            }
         }
         public List<Account> GetAccountsByDate(DateTime date)
         {
-            // Obtener las cuentas por fecha utilizando Entity Framework
-
-            return _dbContext.Accounts.Where(a => DbFunctions.DiffDays(a.Date, date) == 0).ToList();
+            using (var context = new InventoryStevDBContext())
+            {
+                return context.Accounts.Where(a => a.Date.Date == date.Date).ToList();
+            }
         }
         public List<Account> GetAccountsByMonth(int month, int year)
         {
-            // Obtener las cuentas por mes y año utilizando Entity Framework
-
-            return _dbContext.Accounts.Where(a => a.Date.Month == month && a.Date.Year == year).ToList();
+            using (var context = new InventoryStevDBContext())
+            {
+                return context.Accounts
+                    .Where(a => a.Date.Month == month && a.Date.Year == year)
+                    .ToList();
+            }
         }
         public List<Account> GetAccountsByYear(int year)
         {
-            // Obtener las cuentas por año utilizando Entity Framework
-
-            return _dbContext.Accounts.Where(a => a.Date.Year == year).ToList();
-        }
-        public Account GetAccountById(int accountId)
-        {
-            // Obtener una cuenta por su Id utilizando Entity Framework
-
-            return _dbContext.Accounts.Find(accountId);
-        }
-        public bool AddAccount(Account account)
-        {
-            // Agregar una cuenta utilizando Entity Framework
-
-            _dbContext.Accounts.Add(account);
-            return _dbContext.SaveChanges() > 0;
-        }
-        public bool UpdateAccount(Account account)
-        {
-            // Actualizar una cuenta utilizando Entity Framework
-
-            _dbContext.Entry(account).State = EntityState.Modified;
-            return _dbContext.SaveChanges() > 0;
-        }
-        public bool DeleteAccount(int accountId)
-        {
-            // Eliminar una cuenta utilizando Entity Framework
-
-            var account = _dbContext.Accounts.Find(accountId);
-            if (account != null)
+            using (var context = new InventoryStevDBContext())
             {
-                _dbContext.Accounts.Remove(account);
-                return _dbContext.SaveChanges() > 0;
+                return context.Accounts.Where(a => a.Date.Year == year).ToList();
             }
-            return false;
         }
-        public bool AddNoteToAccount(int accountId, string note)
+        public bool Delete(int id)
         {
-            // Agregar una nota a una cuenta utilizando Entity Framework
-
-            var account = _dbContext.Accounts.Find(accountId);
-            if (account != null)
+            throw new NotImplementedException();
+        }
+        public IEnumerable<Account> GetAll(Expression<Func<Account, bool>> filter = null, Func<IQueryable<Account>, IOrderedQueryable<Account>> orderBy = null, string includeProperties = "")
+        {
+            using (var ctx = new InventoryStevDBContext())
             {
-                account.Notes.Add(note);
-                return _dbContext.SaveChanges() > 0;
+                IQueryable<Account> query = ctx.Accounts;
+
+                // Aplicar filtros
+                if (filter != null)
+                {
+                    query = query.Where(filter);
+                }
+
+                // Incluir propiedades relacionadas
+                if (!string.IsNullOrWhiteSpace(includeProperties))
+                {
+                    foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        query = query.Include(includeProperty);
+                    }
+                }
+
+                // Aplicar ordenamiento
+                if (orderBy != null)
+                {
+                    query = orderBy(query);
+                }
+
+                return query.ToList();
             }
-            return false;
         }
     }
 }

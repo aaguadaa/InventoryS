@@ -21,10 +21,13 @@ namespace Domain.Model
         public virtual Product Product { get; set; }
         public DateTime Date { get; set; }
         public List<string> Notes { get; set; }
+        public List<Product> Products { get; set; }
+
         // Constructor
         public Check()
         {
             Notes = new List<string>();
+            Products = new List<Product>();
         }
     }
 }

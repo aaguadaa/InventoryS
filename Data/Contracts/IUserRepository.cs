@@ -5,15 +5,13 @@ namespace Data.Contracts
 {
     public interface IUserRepository : IGenericRepository<User>
     {
-        ICollection<Account> GetAccount(int idUser);
         User Login(string username, string password);
-        bool RelateInventory(int idUser, int idInventory);
-        IEnumerable<User> GetAll();
-        User GetByUsername(string username);
+        bool AddInventoryToUser(int userId, int inventoryId);
+        bool AddAccountToUser(int userId, int inventoryId);
+        bool AddCheckToAccount(int accountId, Check check);
+        bool AddProductToInventory(int inventoryId, Product product);
         object GetByUsernameAndPassword(string username, string password);
-        int AddUser(User user);
-        bool UpdateUser(User user);
-        bool DeleteUser(User user);
-        User GetUserById(int id);
+        User GetByUsername(string username);
+        bool AddNoteToCheck(int checkId, string note);
     }
 }

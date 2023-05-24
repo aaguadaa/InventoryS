@@ -5,12 +5,8 @@ using Domain.Model;
 
 namespace Data.Contracts
 {
-    public interface ICheckRepository
+    public interface ICheckRepository : IGenericRepository<Check>
     {
-        Task<int> AddCheckAsync(Check entity);
-        Task<bool> UpdateCheckAsync(Check entity);
-        Task<bool> DeleteCheckAsync(int id);
-        Task<Check> GetByIdCheckAsync(int id);
         Task<IEnumerable<Check>> GetAllAsync();
         Task<IEnumerable<Check>> GetChecksByMonthAsync(int month);
         Task<IEnumerable<Check>> GetChecksByDateAsync(DateTime date);
@@ -19,5 +15,7 @@ namespace Data.Contracts
         Task AddNoteToCheckAsync(int checkId, string note);
         List<Check> GetChecksByAccountId(int accountId);
         Task<Product> GetProductByIdAsync(int productId);
+        Task AddProductToCheckAsync(int checkId, Product product);
+        Task UpdateProductStatusAsync(int productId, string status);
     }
 }
