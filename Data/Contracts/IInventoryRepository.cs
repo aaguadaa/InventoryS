@@ -6,13 +6,9 @@ namespace Data.Contracts
 {
     public interface IInventoryRepository : IGenericRepository<Domain.Model.Inventory>
     {
-        ICollection<Product> GetProduct(int idProduct);
-        Task<Product> GetProductByIdAsync(int productId);
-        Task<bool> UpdateProductAsync(Product product);
-        bool RelateInventory(Product newProduct);
-        bool RelateInventory(int idUser, int idInventory);
-        Task<IEnumerable<Product>> GetProducts();
-        Task<bool> DeleteProduct(int productId);
-        Task<bool> AddProduct(Product product);
+        IEnumerable<Inventory> GetAllInventories();
+        IEnumerable<Product> GetProductsInInventory(int inventoryId);
+        void AddProductToInventory(int inventoryId, Product product);
+        void RemoveProductFromInventory(int inventoryId, int productId);
     }
 }

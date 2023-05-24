@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Model
 {
@@ -24,12 +23,5 @@ namespace Domain.Model
         public DateTime Date { get; set; }
 
         public List<string> Notes { get; set; }
-
-        [ForeignKey("Inventory")]
-        public int InventoryId { get; set; }
-
-        public virtual Inventory Inventory { get; set; }
-
-        public virtual ICollection<Inventory> Inventories { get; set; }
     }
 }

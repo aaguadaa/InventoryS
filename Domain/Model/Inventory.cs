@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Model
 {
@@ -11,10 +10,6 @@ namespace Domain.Model
         public int Id { get; set; }
         public string Categoria { get; set; }
         public string Description { get; set; }
-        [Required]
-        [ForeignKey("Account")]
-        public int AccountId { get; set; }
-        public virtual Account Account { get; set; }
         public Product UpdatedProduct { get; set; }
         public List<Product> Products { get; set; }
         public DateTime CreatedDate { get; set; }
