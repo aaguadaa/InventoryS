@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Business.Contracts;
 using Data.Contracts;
-using Data.Implementation;
 using Domain.Model;
 
 namespace Business.Services
@@ -12,14 +11,10 @@ namespace Business.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ICheckRepository _checkRepository;
-        private readonly IInventoryRepository _inventoryRepository;
-
-        public InventoryService(IProductRepository productRepository, ICheckRepository checkRepository, IInventoryRepository inventoryRepository)
+        public InventoryService(IProductRepository productRepository, ICheckRepository checkRepository)
         {
             _productRepository = productRepository;
             _checkRepository = checkRepository;
-            _inventoryRepository = inventoryRepository;
-
         }
         public async Task<IEnumerable<Product>> GetInventory()
         {
@@ -60,10 +55,8 @@ namespace Business.Services
         }
         public async Task<IEnumerable<Check>> GetChecksByAccountId(int accountId)
         {
-            var checks = _checkRepository.GetChecksByAccountId(accountId);
-            return await Task.FromResult(checks);
+            return _checkRepository.GetChecksByAccountId(accountId);
         }
-
         public async Task<int> AddCheck(Check check)
         {
             if (check == null)
@@ -101,22 +94,12 @@ namespace Business.Services
             return false;
         }
 
-        public int Add(Domain.Model.Inventory inventory)
+        public int Add(Domain.Model.Inventory l)
         {
-            if (inventory == null)
-            {
-                throw new ArgumentNullException(nameof(inventory));
-            }
-
-            if (_inventoryRepository.InventoryExists(inventory.Id))
-            {
-                throw new InvalidOperationException("El inventario ya existe.");
-            }
-
-            return _inventoryRepository.Add(inventory);
+            throw new NotImplementedException();
         }
 
-        public bool Delete(int id)
+        public bool Update(Domain.Model.Inventory l)
         {
             throw new NotImplementedException();
         }
@@ -126,7 +109,7 @@ namespace Business.Services
             throw new NotImplementedException();
         }
 
-        public bool Update(Domain.Model.Inventory l)
+        public bool Delete(int id)
         {
             throw new NotImplementedException();
         }

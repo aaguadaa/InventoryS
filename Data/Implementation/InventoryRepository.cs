@@ -21,16 +21,7 @@ namespace Data.Implementation
 
         public int Add(Domain.Model.Inventory entity)
         {
-            if (entity == null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-
-            if (InventoryExists(entity.Id))
-            {
-                throw new InvalidOperationException("El inventario ya existe.");
-            }
-
+            if (entity == null) return 0;
             using (var ctx = new InventoryStevDBContext())
             {
                 ctx.Inventories.Add(entity);
@@ -207,14 +198,6 @@ namespace Data.Implementation
             _dbContext.Products.Add(product);
             await _dbContext.SaveChangesAsync();
             return true;
-        }
-
-        public bool InventoryExists(int id)
-        {
-            using (var ctx = new InventoryStevDBContext())
-            {
-                return ctx.Inventories.Any(i => i.Id == id);
-            }
         }
     }
 }

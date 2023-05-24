@@ -18,15 +18,18 @@ namespace Domain.Model
         public string Description { get; set; }
 
         public ICollection<User> Users { get; set; }
+
         public ICollection<Check> Checks { get; set; }
 
         public DateTime Date { get; set; }
+
         public List<string> Notes { get; set; }
 
-        [Required]
         [ForeignKey("Inventory")]
         public int InventoryId { get; set; }
 
         public virtual Inventory Inventory { get; set; }
+
+        public virtual ICollection<Inventory> Inventories { get; set; }
     }
 }

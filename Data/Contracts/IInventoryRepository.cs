@@ -14,6 +14,5 @@ namespace Data.Contracts
         Task<IEnumerable<Product>> GetProducts();
         Task<bool> DeleteProduct(int productId);
         Task<bool> AddProduct(Product product);
-        bool InventoryExists(int id);
     }
 }

@@ -16,9 +16,21 @@ namespace Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Check> Checks { get; set; }
         public DbSet<Domain.Model.Inventory> Inventories { get; set; }
+
         public InventoryStevDBContext() : base("InventoryStev")
         {
 
+        }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            // Configuración de la relación entre Inventory y Account
+            modelBuilder.Entity<Domain.Model.Inventory>()
+                        .HasRequired(i => i.Account)
+                        .WithMany(a => a.Inventories)
+                        .HasForeignKey(i => i.AccountId);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
